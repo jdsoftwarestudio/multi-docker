@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t jliu/multi-docker-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jliu/multi-docker-test npm test -- --coverage
+
+after_success:
+  - docker build -t jliu/multi-client ./client
+  - docker build -t jliu/multi-nginx ./nginx
+  - docker build -t jliu/multi-server ./server
+  - docker build -t jliu/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push jliu/multi-client
+  - docker push jliu/multi-nginx
+  - docker push jliu/multi-server
+  - docker push jliu/multi-worker
